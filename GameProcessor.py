@@ -44,7 +44,7 @@ class GameProcessor:
                             (freqDists[event.pid])[event.control_group] = (freqDists[event.pid])[event.control_group]+1        
                     for key in freqDists.keys():
                         freqDists[key]  = [freq/total_time for freq in freqDists[key]]
-                        player = Player.Player(lookupName(key, curReplay), freqDists[key])
+                        player = Player.Player(lookupName(key, curReplay), freqDists[key], lookupRace(key, curReplay))
                         players.append(player)
         return players;
 
@@ -57,22 +57,27 @@ def processFile(singlefile):
     for player in curReplay.players:
         freqDists[player.uid] = [0]*10
     for event in curReplay.events:
-        if event.name == 'GetFromHotkeyEvent' and event.control_group != 10:
+        if event.name == 'GetFromHotkeyEvent' and event.control_group != 10 and event.pid in freqDists.keys():
             #print(event.pid)
             (freqDists[event.pid])[event.control_group] = (freqDists[event.pid])[event.control_group]+1        
             #print(  event._str_prefix() +  " selection event found " + str(event.control_group) + ' ' +  str(i))  
     for key in freqDists.keys():
         freqDists[key]  = [freq/total_time for freq in freqDists[key]]
-        player = Player.Player(lookupName(key, curReplay), freqDists[key])
+        player = Player.Player(lookupName(key, curReplay), freqDists[key], lookupRace(key, curReplay))
         players.append(player)
     return players
 
              
-#We implement this function because looking up player names by uid may be
+#We implement these functions because looking up player names by uid may be
 #janky in a future version of sc2reader        
 def lookupName(uid, replay):
     for player in replay.players:
         if player.uid == uid:
             return player.name
+
+def lookupRace(uid, replay):
+    for player in replay.players:
+        if player.uid == uid:
+            return player.pick_race
         
         

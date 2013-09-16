@@ -33,8 +33,8 @@ class VroMAD:
  
         ranking_0 = sorted(self.players, key=lambda Player: Player.simToTest_0, reverse=True)
         ranking_1 = sorted(self.players, key=lambda Player: Player.simToTest_1, reverse=True)
-        for rank in ranking:
-            print(rank.name + " " + str(rank.simToTest))
+        for rank in ranking_0:
+            print(rank.name + " " + str(rank.simToTest_0) + " " + rank.race)
         
 
     def playerSimGauss(self, std, player1, player2):
