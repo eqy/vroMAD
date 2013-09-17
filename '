@@ -1,6 +1,0 @@
-import Tkinter
-
-class VroMADGUI(Tkinter.Frame):
-    def __init__(self, master=None):
-        Tkinter.Frame.__init__(self, master)
-        self.grid()

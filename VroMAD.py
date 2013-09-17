@@ -21,12 +21,15 @@ class VroMAD:
  
     def extractPlayers(self):
         self.players = self.players + self.gameProcessor.processFiles()
-   
+        if len(self.players) <= 0:
+            return -1; 
         for player in self.players:
             print(player.freqDist) 
             self.dataList.append(player.freqDist)    
              
         self.testPlayers = GameProcessor.processFile(self.testPath)
+       
+        return len(self.players);
      
     def calcSimGauss(self):
         data = numpy.array(self.dataList)        
@@ -42,8 +45,8 @@ class VroMAD:
  
         ranking_0 = sorted(self.players, key=lambda Player: Player.simToTest_0, reverse=True)
         ranking_1 = sorted(self.players, key=lambda Player: Player.simToTest_1, reverse=True)
-        for rank in ranking_0:
-            print(rank.name + " " + str(rank.simToTest_0) + " " + rank.race)
+        return [ranking_0, ranking_1]
+             
         
     def calcEuclidDist(self):
         for player in self.players:
