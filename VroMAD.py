@@ -3,8 +3,17 @@ import Player
 import numpy
 
 class VroMAD:
-    def __init__(self, samplePathm, testPath):
-        self.gameProcessor = GameProcessor.GameProcessor("../example", "")
+    def __init__(self):
+        self.samplePath = ""
+        self.gameProcessor = GameProcessor.GameProcessor()
+        self.gameProcessor.findFiles() 
+        self.players = list() 
+        self.testPath = ""
+        self.dataList = list()   
+     
+    def __init__(self, samplePath, testPath):
+        self.samplePath = samplePath
+        self.gameProcessor = GameProcessor.GameProcessor(samplePath, testPath)
         self.gameProcessor.findFiles() 
         self.players = list() 
         self.testPath = testPath
@@ -28,23 +37,40 @@ class VroMAD:
                 std[i] = 1
         print(std)
         for player in self.players:
-            player.simToTest_0 = self.playerSimGauss(std, self.testPlayers[0], player)
-            player.simToTest_1 = self.playerSimGauss(std, self.testPlayers[1], player)       
+            player.simToTest_0 = playerSimGauss(std, self.testPlayers[0], player)
+            player.simToTest_1 = playerSimGauss(std, self.testPlayers[1], player)       
  
         ranking_0 = sorted(self.players, key=lambda Player: Player.simToTest_0, reverse=True)
         ranking_1 = sorted(self.players, key=lambda Player: Player.simToTest_1, reverse=True)
         for rank in ranking_0:
             print(rank.name + " " + str(rank.simToTest_0) + " " + rank.race)
         
+    def calcEuclidDist(self):
+        for player in self.players:
+            player.euclidDist_0 = playerEuclidDist(self.testPlayers[0], player)
+            player.euclidDist_1 = playerEuclidDist(self.testPlayers[1], player)
+        ranking_0 = sorted(self.players, key=lambda Player: Player.euclidDist_0)
+        ranking_1 = sorted(self.players, key=lambda Player: Player.euclidDist_1)
+    
+        for rank in ranking_0:
+            print(rank.name + " " + str(rank.euclidDist_0) + " " + rank.race) 
 
-    def playerSimGauss(self, std, player1, player2):
-        print("playersimgauss")
-        
-        data = numpy.subtract(numpy.array(player1.freqDist),numpy.array(player2.freqDist))
-        data = numpy.square(data)
-        data = numpy.divide(data, 2*std)
-        data = numpy.exp(-numpy.sum(data))
-        return data;
-        #print(data)
+def playerSimGauss(std, player1, player2):
+    print("playersimgauss")
+    
+    data = numpy.subtract(numpy.array(player1.freqDist),numpy.array(player2.freqDist))
+    data = numpy.square(data)
+    data = numpy.divide(data, 2*std)
+    data = numpy.exp(-numpy.sum(data))
+    return data;
+    #print(data)
+
+def playerEuclidDist(player1, player2):
+    data = numpy.subtract(numpy.array(player1.freqDist),numpy.array(player2.freqDist))
+    data = numpy.square(data)
+    data = numpy.sum(data)
+    data = numpy.sqrt(data)
+    return data;
+
         
         

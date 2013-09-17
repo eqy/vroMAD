@@ -1,13 +1,18 @@
 import os
-#import sys
-#sys.path.insert(0, "/home/ketsol/projects/sc2readerfork/sc2reader/")
 import sc2reader
 import Player
 
 class GameProcessor:
     CONST_FPS = 16.0
     CONST_EXT = '.SC2Replay'
-    
+
+    def __init__(self):
+        self.path = ""
+        self.files = list()
+        self.exclude = ""
+        self.processed = dict()
+        print("GameProcessor created")
+        
     def __init__(self, path, exclude):
         self.path = path
         self.files = list()
@@ -23,6 +28,7 @@ class GameProcessor:
         for dirpath, dirnames, filenames in os.walk(self.path):
             for filename in filenames:
                 (root, ext) = os.path.splitext(filename)
+                #We only care about files ending in .SC2Replay
                 if ext == GameProcessor.CONST_EXT:
                     self.files.append(os.path.join(dirpath,filename))
                     print(self.files[-1])
@@ -39,8 +45,12 @@ class GameProcessor:
                     for player in curReplay.players:
                         freqDists[player.uid] = [0]*10
                         print(player.uid)
+                    #This for loop takes on the order of 10^3 iterations per
+                    #replay, but it is not a performance bottleneck
                     for event in curReplay.events:
-                        if event.name == 'GetFromHotkeyEvent' and event.control_group != 10 and event.pid in freqDists.keys():
+                        #Notice we check that the event was spawned by an actual
+                        #player
+                        if event.name == 'GetFromHotkeyEvent' and event.control_group < 10 and event.pid in freqDists.keys():
                             (freqDists[event.pid])[event.control_group] = (freqDists[event.pid])[event.control_group]+1        
                     for key in freqDists.keys():
                         freqDists[key]  = [freq/total_time for freq in freqDists[key]]
@@ -57,7 +67,7 @@ def processFile(singlefile):
     for player in curReplay.players:
         freqDists[player.uid] = [0]*10
     for event in curReplay.events:
-        if event.name == 'GetFromHotkeyEvent' and event.control_group != 10 and event.pid in freqDists.keys():
+        if event.name == 'GetFromHotkeyEvent' and event.control_group < 10 and event.pid in freqDists.keys():
             #print(event.pid)
             (freqDists[event.pid])[event.control_group] = (freqDists[event.pid])[event.control_group]+1        
             #print(  event._str_prefix() +  " selection event found " + str(event.control_group) + ' ' +  str(i))  

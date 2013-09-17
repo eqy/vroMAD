@@ -5,5 +5,7 @@ class Player:
         self.race = race
         self.simToTest_0 = 0
         self.simToTest_1 = 0
+        self.euclidDist_0  = 0
+        self.euclidDist_1  = 0
         print("Player created")    
     
