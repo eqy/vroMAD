@@ -119,13 +119,15 @@ class VroMADGUI():
         self.resultLabels = list()
         i=0
         for player in results[0]:
-            printableResults = "" 
-            printableResults = printableResults + player.name + " "
-            printableResults = printableResults + str(player.simToTest_0) + " "
-            printableResults = printableResults + player.race + " "
-            printableResults = printableResults + player.mapName + " "
-            self.resultLabels.append(tk.Label(self.tableFrame,text=printableResults,bg='white'))
-            self.resultLabels[-1].grid(row=i,column=0)
+            currentRow = list()
+            currentRow.append(tk.Label(self.tableFrame,text=player.name,width=30))
+            currentRow[-1].grid(row=i,column=0)
+            currentRow.append(tk.Label(self.tableFrame,text=str(player.simToTest_0),width=30))
+            currentRow[-1].grid(row=i,column=1)
+            currentRow.append(tk.Label(self.tableFrame,text=player.race,width=30))
+            currentRow[-1].grid(row=i,column=2)
+            currentRow.append(tk.Label(self.tableFrame,text=player.mapName,width=30))
+            currentRow[-1].grid(row=i,column=3)
+            self.resultLabels.append(currentRow)
             i=i+1
-            print(printableResults)
         
