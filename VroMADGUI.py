@@ -49,19 +49,41 @@ class VroMADGUI():
         
         self.startStatusLabel = tk.Label(self.frame, text="")
         self.startStatusLabel.grid(row=2,column=1,columnspan=4, sticky=tk.W)
+      
+         
+        #Hideous hack below, I have no idea how this really works 
+        #We need this to be able to use pack nevermind we don't
+        #self.canvasContainerFrame = tk.Frame(self.frame)
+        #self.canvasContainerFrame.grid(row=3,column=0,columnspan=10)
 
-        #Canvas for table
-        self.tableCanvas = tk.Canvas(self.frame, width=1000, height=700)
-        self.tableCanvas.grid(row=4, column=0, columnspan=10, sticky=tk.W)
+        #Still, I don't really know how this works
+        #Canvas for table, we need 
+        self.tableCanvas = tk.Canvas(self.frame,width=1000,height=700,bg='white')
+
+        #Scrollbar for canvas
+        self.scrollBar = tk.Scrollbar(self.frame,command=self.tableCanvas.yview)
+        self.scrollBar.grid(row=3, column=10, sticky=tk.N+tk.S) 
+
+        self.tableCanvas.configure(yscrollcommand=self.scrollBar.set)
 
         #Frame for table canvas
-        self.tableFrame = tk.Frame(self.tableCanvas, width=1000, height=700,  bg='white')
-        self.tableFrame.grid(row=0,column=0)
+        self.tableFrame = tk.Frame(self.tableCanvas, bg='white')
+        self.tableFrame.grid()      
+ 
+        self.tableLabels = list()
+        self.tableCanvas.grid(row=3, column=0,columnspan=10)
+        self.tableCanvas.create_window((0,0),window=self.tableFrame, anchor='nw')
+        #The <Configure> here is our salvation
+        self.tableFrame.bind("<Configure>", self.OnFrameConfigure)
+        #for i in range(0,50):
+        #    self.tableLabels.append(tk.Label(self.tableFrame, text="temp"))  
+        #    self.tableLabels[-1].grid(row=i,column=0)
         
-        #Scrollbar for canvas
-        self.scrollBar = tk.Scrollbar(self.frame)
-        self.scrollBar.grid(row=4,sticky=tk.N+tk.S,column=10) 
+        self.tableCanvas.configure(scrollregion=self.tableCanvas.bbox('all'))       
 
+    def OnFrameConfigure(self, event):
+        self.tableCanvas.configure(scrollregion=self.tableCanvas.bbox('all'))       
+ 
     def paint(self):
         self.root.mainloop()
     
