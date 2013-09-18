@@ -33,7 +33,6 @@ class GameProcessor:
                     self.files.append(os.path.join(dirpath,filename))
                     print(self.files[-1])
 
-    
     def processFiles(self):
         players = list()
         for filepath in self.files:

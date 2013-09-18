@@ -8,6 +8,7 @@ class VroMAD:
         self.gameProcessor = None 
         self.players = list() 
         self.testPath = testPath
+        self.testPlayers = None
         self.dataList = list()   
  
     def extractPlayers(self):
@@ -36,11 +37,12 @@ class VroMAD:
                 std[i] = 1
         print(std)
         for player in self.players:
-            player.simToTest_0 = playerSimGauss(std, self.testPlayers[0], player)
-            player.simToTest_1 = playerSimGauss(std, self.testPlayers[1], player)       
+            player.simToTest = list()
+            player.simToTest.append(playerSimGauss(std, self.testPlayers[0],player))
+            player.simToTest.append(playerSimGauss(std, self.testPlayers[1],player))
  
-        ranking_0 = sorted(self.players, key=lambda Player: Player.simToTest_0, reverse=True)
-        ranking_1 = sorted(self.players, key=lambda Player: Player.simToTest_1, reverse=True)
+        ranking_0 = sorted(self.players, key=lambda Player: Player.simToTest[0], reverse=True)
+        ranking_1 = sorted(self.players, key=lambda Player: Player.simToTest[1], reverse=True)
         return [ranking_0, ranking_1]
              
         

@@ -7,8 +7,10 @@ import VroMAD
 class VroMADGUI():
     CONST_GAUSS_SIM = 0
     CONST_EUCLID_DIST = 1    
+    CONST_CELL_W = 30
 
     def __init__(self):
+        self.started = False
         self.vromad = VroMAD.VroMAD()
         self.referencePath = ""
         self.testPath      = ""  
@@ -79,15 +81,25 @@ class VroMADGUI():
         self.tableFrame.bind("<Configure>", self.OnFrameConfigure)
         
         self.tableCanvas.configure(scrollregion=self.tableCanvas.bbox('all'))       
+
+        ##Create labels
+        self.playerLabel = tk.Label(self.tableFrame, text="Player",width=self.CONST_CELL_W,bg='white')
+        self.playerLabel.grid(row=0,column=0)
+        self.simLabel    = tk.Label(self.tableFrame, text="Similarity",width=self.CONST_CELL_W,bg='white')
+        self.simLabel.grid(row=0,column=1)
+        self.raceLabel = tk.Label(self.tableFrame, text="Race",width=self.CONST_CELL_W,bg='white')
+        self.raceLabel.grid(row=0,column=2)
+        self.mapLabel = tk.Label(self.tableFrame,text="Map",width=self.CONST_CELL_W,bg='white')
+        self.mapLabel.grid(row=0,column=3)
          
         #Radio buttons for player selection
         self.radioButtonVar = tk.IntVar()
-        self.radioButtonP1 = tk.Radiobutton(self.frame,text="Player 0", variable=self.radioButtonVar, value=0)
-        self.radioButtonP1.grid(row=2,column=4)
+        self.radioButtonP1 = tk.Radiobutton(self.frame,text="Player 0", variable=self.radioButtonVar, value=0, command=self.drawTable)
+        self.radioButtonP1.grid(row=2,column=4,columnspan=3, sticky=tk.W)
         
-        self.radioButtonP2Var = tk.IntVar()
-        self.radioButtonP2 = tk.Radiobutton(self.frame,text="Player 1", variable=self.radioButtonVar, value=1)
-        self.radioButtonP2.grid(row=3,column=4)
+        self.radioButtonP2 = tk.Radiobutton(self.frame,text="Player 1", variable=self.radioButtonVar, value=1, command=self.drawTable)
+        self.radioButtonP2.grid(row=3,column=4,columnspan=3, sticky=tk.W)
+
         
         #Popup with exception information
         self.popup = None 
@@ -127,25 +139,29 @@ class VroMADGUI():
             else:
                 startStatus.set("Found " + str(extractStatus) + " players in reference folder.")   
                 self.drawTable()
+                self.radioButtonP1.configure(text="Player 1 (" + self.vromad.testPlayers[0].name + ")")
+                self.radioButtonP2.configure(text="Player 1 (" + self.vromad.testPlayers[1].name + ")")
         else:
             startStatus.set("Please select valid paths.")
            
     def drawTable(self):
-        results = self.vromad.calcSimGauss()
-        self.resultLabels = list()
-        i=0
-        for player in results[0]:
-            currentRow = list()
-            currentRow.append(tk.Label(self.tableFrame,text=player.name,width=30))
-            currentRow[-1].grid(row=i,column=0)
-            currentRow.append(tk.Label(self.tableFrame,text=str(player.simToTest_0),width=30))
-            currentRow[-1].grid(row=i,column=1)
-            currentRow.append(tk.Label(self.tableFrame,text=player.race,width=30))
-            currentRow[-1].grid(row=i,column=2)
-            currentRow.append(tk.Label(self.tableFrame,text=player.mapName,width=30))
-            currentRow[-1].grid(row=i,column=3)
-            self.resultLabels.append(currentRow)
-            i=i+1
+        if self.start:
+            results = self.vromad.calcSimGauss()
+            self.resultLabels = list()
+            i=1
+            choice = self.radioButtonVar.get()
+            for player in results[choice]:
+                currentRow = list()
+                currentRow.append(tk.Label(self.tableFrame,text=player.name,width=30))
+                currentRow[-1].grid(row=i,column=0)
+                currentRow.append(tk.Label(self.tableFrame,text=str(player.simToTest[choice]),width=30))
+                currentRow[-1].grid(row=i,column=1)
+                currentRow.append(tk.Label(self.tableFrame,text=player.race,width=30))
+                currentRow[-1].grid(row=i,column=2)
+                currentRow.append(tk.Label(self.tableFrame,text=player.mapName,width=30))
+                currentRow[-1].grid(row=i,column=3)
+                self.resultLabels.append(currentRow)
+                i=i+1
     
     def exceptionPopUp(self,msg):
         self.popup = tk.Toplevel()

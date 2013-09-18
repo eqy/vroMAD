@@ -3,8 +3,7 @@ class Player:
         self.name = name
         self.freqDist = freqDist
         self.race = race
-        self.simToTest_0 = 0
-        self.simToTest_1 = 0
+        self.simToTest = list()
         self.euclidDist_0  = 0
         self.euclidDist_1  = 0
         self.mapName = mapName
