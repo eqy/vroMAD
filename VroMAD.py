@@ -16,18 +16,49 @@ class VroMAD:
             self.gameProcessor = GameProcessor.GameProcessor(self.samplePath, self.testPath)
         self.gameProcessor.path = self.samplePath
         self.gameProcessor.exclude = self.testPath
+        self.testPlayers = GameProcessor.processFile(self.testPath)
         self.gameProcessor.findFiles()
         self.players = self.players + self.gameProcessor.processFiles()
         if len(self.players) <= 0:
             return -1; 
+        #Remove potentially previously added players that should be excluded
+        for player in self.players:
+            if player.repName == self.testPlayers[0].repName or player.repName == self.testPlayers[1].repName:
+                self.players.remove(player) 
+
+
         self.dataList = list()
         for player in self.players:
             print(player.freqDist) 
             self.dataList.append(player.freqDist)    
              
-        self.testPlayers = GameProcessor.processFile(self.testPath)
         return len(self.players);
-     
+
+    def extractPlayers_mp(self, outqueue, objqueue):
+        if self.gameProcessor is None:
+             self.gameProcessor = GameProcessor.GameProcessor(self.samplePath, self.testPath)
+        self.gameProcessor.path = self.samplePath
+        self.gameProcessor.exclude = self.testPath
+        self.testPlayers = GameProcessor.processFile(self.testPath)
+        self.gameProcessor.findFiles()
+        self.players = self.players + self.gameProcessor.processFiles()
+        if len(self.players) <= 0:
+            return -1; 
+        #Remove potentially previously added players that should be excluded
+        for player in self.players:
+            if player.repName == self.testPlayers[0].repName:
+                self.players.remove(player) 
+
+        #Needed so that std calculation doesn't use redundant data
+        self.dataList = list()
+        
+        for player in self.players:
+            print(player.freqDist) 
+            self.dataList.append(player.freqDist)    
+             
+        outqueue.put(len(self.players));
+        objqueue.put(self)
+
     def calcSimGauss(self):
         data = numpy.array(self.dataList)        
         std     = numpy.std(data, axis=0)

@@ -54,7 +54,7 @@ class GameProcessor:
                             (freqDists[event.pid])[event.control_group] = (freqDists[event.pid])[event.control_group]+1        
                     for key in freqDists.keys():
                         freqDists[key]  = [freq/total_time for freq in freqDists[key]]
-                        player = Player.Player(lookupName(key, curReplay), freqDists[key], lookupRace(key, curReplay), curReplay.map_name)
+                        player = Player.Player(lookupName(key, curReplay), freqDists[key], lookupRace(key, curReplay), curReplay.map_name, curReplay.filename)
                         players.append(player)
         return players;
 
@@ -73,7 +73,7 @@ def processFile(singlefile):
             #print(  event._str_prefix() +  " selection event found " + str(event.control_group) + ' ' +  str(i))  
     for key in freqDists.keys():
         freqDists[key]  = [freq/total_time for freq in freqDists[key]]
-        player = Player.Player(lookupName(key, curReplay), freqDists[key], lookupRace(key, curReplay), curReplay.map_name)
+        player = Player.Player(lookupName(key, curReplay), freqDists[key], lookupRace(key, curReplay), curReplay.map_name, curReplay.filename)
         players.append(player)
     return players
 

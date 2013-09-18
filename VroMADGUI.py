@@ -1,4 +1,5 @@
 import traceback
+import multiprocessing as mp
 import tkinter as tk
 import tkinter.filedialog
 import VroMAD
@@ -129,17 +130,24 @@ class VroMADGUI():
             startStatus.set("OK.")
             self.vromad.samplePath = self.referencePath
             self.vromad.testPath = self.testPath
+            outqueue = mp.Queue()
+            objqueue = mp.Queue()
             try:
-                 extractStatus = self.vromad.extractPlayers()
+                 process = mp.Process(target=self.vromad.extractPlayers_mp,args=[outqueue, objqueue])
+                 process.daemon = True
+                 process.start()
+                 process.join()
             except:
                  self.exceptionPopUp(traceback.format_exc())
                  extractStatus = -1
+            extractStatus = outqueue.get()
+            self.vromad = objqueue.get()
             if extractStatus < 0:
                 startStatus.set("Please try a different path")
             else:
                 startStatus.set("Found " + str(extractStatus) + " players in reference folder.")   
                 self.drawTable()
-                self.radioButtonP1.configure(text="Player 1 (" + self.vromad.testPlayers[0].name + ")")
+                self.radioButtonP1.configure(text="Player 0 (" + self.vromad.testPlayers[0].name + ")")
                 self.radioButtonP2.configure(text="Player 1 (" + self.vromad.testPlayers[1].name + ")")
         else:
             startStatus.set("Please select valid paths.")
