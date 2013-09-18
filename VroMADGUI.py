@@ -1,3 +1,4 @@
+import traceback
 import tkinter as tk
 import tkinter.filedialog
 import VroMAD
@@ -8,6 +9,7 @@ class VroMADGUI():
     CONST_EUCLID_DIST = 1    
 
     def __init__(self):
+        self.vromad = VroMAD.VroMAD()
         self.referencePath = ""
         self.testPath      = ""  
  
@@ -48,7 +50,7 @@ class VroMADGUI():
         self.button3.grid(row=2, column=0, padx=5,pady=5, sticky=tk.W) 
         
         self.startStatusLabel = tk.Label(self.frame, text="")
-        self.startStatusLabel.grid(row=2,column=1,columnspan=4, sticky=tk.W)
+        self.startStatusLabel.grid(row=2,column=1,columnspan=3, sticky=tk.W)
       
          
         #Hideous hack below, I have no idea how this really works 
@@ -62,7 +64,7 @@ class VroMADGUI():
 
         #Scrollbar for canvas
         self.scrollBar = tk.Scrollbar(self.frame,command=self.tableCanvas.yview)
-        self.scrollBar.grid(row=3, column=10, sticky=tk.N+tk.S) 
+        self.scrollBar.grid(row=4, column=10, sticky=tk.N+tk.S) 
 
         self.tableCanvas.configure(yscrollcommand=self.scrollBar.set)
 
@@ -71,15 +73,24 @@ class VroMADGUI():
         self.tableFrame.grid()      
  
         self.tableLabels = list()
-        self.tableCanvas.grid(row=3, column=0,columnspan=10)
+        self.tableCanvas.grid(row=4, column=0,columnspan=10)
         self.tableCanvas.create_window((0,0),window=self.tableFrame, anchor='nw')
         #The <Configure> here is our salvation
         self.tableFrame.bind("<Configure>", self.OnFrameConfigure)
-        #for i in range(0,50):
-        #    self.tableLabels.append(tk.Label(self.tableFrame, text="temp"))  
-        #    self.tableLabels[-1].grid(row=i,column=0)
         
         self.tableCanvas.configure(scrollregion=self.tableCanvas.bbox('all'))       
+         
+        #Radio buttons for player selection
+        self.radioButtonVar = tk.IntVar()
+        self.radioButtonP1 = tk.Radiobutton(self.frame,text="Player 0", variable=self.radioButtonVar, value=0)
+        self.radioButtonP1.grid(row=2,column=4)
+        
+        self.radioButtonP2Var = tk.IntVar()
+        self.radioButtonP2 = tk.Radiobutton(self.frame,text="Player 1", variable=self.radioButtonVar, value=1)
+        self.radioButtonP2.grid(row=3,column=4)
+        
+        #Popup with exception information
+        self.popup = None 
 
     def OnFrameConfigure(self, event):
         self.tableCanvas.configure(scrollregion=self.tableCanvas.bbox('all'))       
@@ -104,8 +115,13 @@ class VroMADGUI():
         self.startStatusLabel['textvariable']=startStatus
         if self.testPath != "" and self.referencePath != "":
             startStatus.set("OK.")
-            self.vromad = VroMAD.VroMAD(self.referencePath, self.testPath)
-            extractStatus = self.vromad.extractPlayers()
+            self.vromad.samplePath = self.referencePath
+            self.vromad.testPath = self.testPath
+            try:
+                 extractStatus = self.vromad.extractPlayers()
+            except:
+                 self.exceptionPopUp(traceback.format_exc())
+                 extractStatus = -1
             if extractStatus < 0:
                 startStatus.set("Please try a different path")
             else:
@@ -130,4 +146,11 @@ class VroMADGUI():
             currentRow[-1].grid(row=i,column=3)
             self.resultLabels.append(currentRow)
             i=i+1
+    
+    def exceptionPopUp(self,msg):
+        self.popup = tk.Toplevel()
+        self.errMessage = tk.Message(self.popup, text=msg)
+        self.errMessage.pack()
+        self.popup.title("EXCEPTION")
         
+

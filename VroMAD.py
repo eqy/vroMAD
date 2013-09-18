@@ -3,32 +3,28 @@ import Player
 import numpy
 
 class VroMAD:
-    def __init__(self):
-        self.samplePath = ""
-        self.gameProcessor = GameProcessor.GameProcessor()
-        self.gameProcessor.findFiles() 
-        self.players = list() 
-        self.testPath = ""
-        self.dataList = list()   
-     
-    def __init__(self, samplePath, testPath):
+    def __init__(self, samplePath="", testPath=""):
         self.samplePath = samplePath
-        self.gameProcessor = GameProcessor.GameProcessor(samplePath, testPath)
-        self.gameProcessor.findFiles() 
+        self.gameProcessor = None 
         self.players = list() 
         self.testPath = testPath
         self.dataList = list()   
  
     def extractPlayers(self):
+        if self.gameProcessor is None:
+            self.gameProcessor = GameProcessor.GameProcessor(self.samplePath, self.testPath)
+        self.gameProcessor.path = self.samplePath
+        self.gameProcessor.exclude = self.testPath
+        self.gameProcessor.findFiles()
         self.players = self.players + self.gameProcessor.processFiles()
         if len(self.players) <= 0:
             return -1; 
+        self.dataList = list()
         for player in self.players:
             print(player.freqDist) 
             self.dataList.append(player.freqDist)    
              
         self.testPlayers = GameProcessor.processFile(self.testPath)
-       
         return len(self.players);
      
     def calcSimGauss(self):

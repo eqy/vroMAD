@@ -42,6 +42,7 @@ class GameProcessor:
                     curReplay = sc2reader.load_replay(filepath)
                     total_time = curReplay.frames/GameProcessor.CONST_FPS
                     freqDists = dict()
+                    print(curReplay.filename)
                     for player in curReplay.players:
                         freqDists[player.uid] = [0]*10
                         print(player.uid)
