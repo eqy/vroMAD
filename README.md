@@ -1,4 +1,6 @@
 vroMAD
 ======
 
-vroMAD
+Dependencies:
++ sc2reader
++ numpy
