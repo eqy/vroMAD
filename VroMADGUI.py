@@ -1,14 +1,24 @@
 import traceback
 import multiprocessing as mp
+import queue
 import tkinter as tk
 import tkinter.filedialog
+import tkinter.ttk
 import VroMAD
+
 
 #Very ugly hackjob for GUI, I have no idea what I'm doing
 class VroMADGUI():
     CONST_GAUSS_SIM = 0
     CONST_EUCLID_DIST = 1    
-    CONST_CELL_W = 30
+    CONST_CELL_W = 32
+    CONST_99 = '#039331'
+    CONST_98 = '#3A9B20'
+    CONST_95 = '#92C00E'
+    CONST_94 = '#C5D300'
+    CONST_93 = '#E6E209'
+    CONST_90 = '#ED9E0A'
+    CONST_L  = '#CA2136'
 
     def __init__(self):
         self.started = False
@@ -68,7 +78,6 @@ class VroMADGUI():
         #Scrollbar for canvas
         self.scrollBar = tk.Scrollbar(self.frame,command=self.tableCanvas.yview)
         self.scrollBar.grid(row=4, column=10, sticky=tk.N+tk.S) 
-
         self.tableCanvas.configure(yscrollcommand=self.scrollBar.set)
 
         #Frame for table canvas
@@ -101,9 +110,12 @@ class VroMADGUI():
         self.radioButtonP2 = tk.Radiobutton(self.frame,text="Player 1", variable=self.radioButtonVar, value=1, command=self.drawTable)
         self.radioButtonP2.grid(row=3,column=4,columnspan=3, sticky=tk.W)
 
-        
         #Popup with exception information
         self.popup = None 
+
+        #Progressbar
+        self.progressBar = tk.ttk.Progressbar(self.frame,length=1000)
+        self.progressBar.grid(row=5,column=0,columnspan=10)
 
     def OnFrameConfigure(self, event):
         self.tableCanvas.configure(scrollregion=self.tableCanvas.bbox('all'))       
@@ -124,33 +136,24 @@ class VroMADGUI():
         newPathContent.set(self.testPath)
 
     def start(self):
-        startStatus = tk.StringVar()
-        self.startStatusLabel['textvariable']=startStatus
+        self.startStatus = tk.StringVar()
+        self.startStatusLabel['textvariable']=self.startStatus
         if self.testPath != "" and self.referencePath != "":
-            startStatus.set("OK.")
+            self.startStatus.set("OK.")
             self.vromad.samplePath = self.referencePath
             self.vromad.testPath = self.testPath
             outqueue = mp.Queue()
             objqueue = mp.Queue()
-            try:
-                 process = mp.Process(target=self.vromad.extractPlayers_mp,args=[outqueue, objqueue])
-                 process.daemon = True
-                 process.start()
-                 process.join()
-            except:
-                 self.exceptionPopUp(traceback.format_exc())
-                 extractStatus = -1
-            extractStatus = outqueue.get()
-            self.vromad = objqueue.get()
-            if extractStatus < 0:
-                startStatus.set("Please try a different path")
-            else:
-                startStatus.set("Found " + str(extractStatus) + " players in reference folder.")   
-                self.drawTable()
-                self.radioButtonP1.configure(text="Player 0 (" + self.vromad.testPlayers[0].name + ")")
-                self.radioButtonP2.configure(text="Player 1 (" + self.vromad.testPlayers[1].name + ")")
+            progqueue = mp.Queue()
+            errqueue = mp.Queue()
+            process = mp.Process(target=self.vromad.extractPlayers_mp,args=[outqueue, objqueue, progqueue, errqueue])
+            process.daemon = True
+            process.start()
+            print("started process")
+            self.frame.after(10, self.checkStatus,[outqueue, objqueue, progqueue, errqueue])
+            print("bar should have started")
         else:
-            startStatus.set("Please select valid paths.")
+            self.startStatus.set("Please select valid paths.")
            
     def drawTable(self):
         if self.start:
@@ -160,13 +163,27 @@ class VroMADGUI():
             choice = self.radioButtonVar.get()
             for player in results[choice]:
                 currentRow = list()
-                currentRow.append(tk.Label(self.tableFrame,text=player.name,width=30))
+                currentRow.append(tk.Label(self.tableFrame,text=player.name,width=self.CONST_CELL_W, bg='white'))
                 currentRow[-1].grid(row=i,column=0)
-                currentRow.append(tk.Label(self.tableFrame,text=str(player.simToTest[choice]),width=30))
+                currentRow.append(tk.Label(self.tableFrame,text=str(player.simToTest[choice]),width=self.CONST_CELL_W, bg='white'))
+                if player.simToTest[choice] >= 0.99:
+                    currentRow[-1].configure(bg=self.CONST_99)
+                elif player.simToTest[choice] >= 0.98:
+                    currentRow[-1].configure(bg=self.CONST_98)
+                elif player.simToTest[choice] >= 0.95:
+                    currentRow[-1].configure(bg=self.CONST_95)
+                elif player.simToTest[choice] >= 0.94:
+                    currentRow[-1].configure(bg=self.CONST_94)
+                elif player.simToTest[choice] >= 0.93:
+                    currentRow[-1].configure(bg=self.CONST_93)
+                elif player.simToTest[choice] >= 0.90:
+                    currentRow[-1].configure(bg=self.CONST_90)
+                else:
+                    currentRow[-1].configure(bg=self.CONST_L) 
                 currentRow[-1].grid(row=i,column=1)
-                currentRow.append(tk.Label(self.tableFrame,text=player.race,width=30))
+                currentRow.append(tk.Label(self.tableFrame,text=player.race,width=self.CONST_CELL_W, bg='white'))
                 currentRow[-1].grid(row=i,column=2)
-                currentRow.append(tk.Label(self.tableFrame,text=player.mapName,width=30))
+                currentRow.append(tk.Label(self.tableFrame,text=player.mapName,width=self.CONST_CELL_W, bg='white'))
                 currentRow[-1].grid(row=i,column=3)
                 self.resultLabels.append(currentRow)
                 i=i+1
@@ -176,5 +193,34 @@ class VroMADGUI():
         self.errMessage = tk.Message(self.popup, text=msg)
         self.errMessage.pack()
         self.popup.title("EXCEPTION")
+
+    def checkStatus(self,queues):
+        print("updateplz")
+        try:
+            queuestuff = queues[2].get_nowait()
+        except queue.Empty:
+            print("empty")
+            self.root.update()
+            queuestuff = "WAIT"
+        if queuestuff == "FATAL":
+            self.exceptionPopUp(queues[3].get())
+            return 
+        elif queuestuff != "ALLDONEHERE":
+            if queuestuff != "WAIT":
+                self.progressBar.step(float(queuestuff))
+            self.frame.after(10, self.checkStatus, queues)
+        else:
+            #Handle done
+            extractStatus = queues[0].get()
+            self.vromad =   queues[1].get()
+            if extractStatus <= 0:
+                self.startStatus.set("Please try a different path")
+            else:
+                self.startStatus.set("Found " + str(extractStatus) + " players in reference folder.")   
+                self.drawTable()
+                self.radioButtonP1.configure(text="Player 0 (" + self.vromad.testPlayers[0].name + ")")
+                self.radioButtonP2.configure(text="Player 1 (" + self.vromad.testPlayers[1].name + ")")
         
 
+def wtf():
+    print("WTF")

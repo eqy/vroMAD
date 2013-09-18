@@ -34,14 +34,16 @@ class VroMAD:
              
         return len(self.players);
 
-    def extractPlayers_mp(self, outqueue, objqueue):
+    def extractPlayers_mp(self, outqueue, objqueue, progqueue, errqueue):
         if self.gameProcessor is None:
              self.gameProcessor = GameProcessor.GameProcessor(self.samplePath, self.testPath)
         self.gameProcessor.path = self.samplePath
         self.gameProcessor.exclude = self.testPath
         self.testPlayers = GameProcessor.processFile(self.testPath)
         self.gameProcessor.findFiles()
-        self.players = self.players + self.gameProcessor.processFiles()
+        newPlayers = self.gameProcessor.processFiles_mp(progqueue, errqueue)
+        if newPlayers != None:
+            self.players = self.players + newPlayers
         if len(self.players) <= 0:
             return -1; 
         #Remove potentially previously added players that should be excluded
@@ -58,6 +60,7 @@ class VroMAD:
              
         outqueue.put(len(self.players));
         objqueue.put(self)
+        progqueue.put("ALLDONEHERE")
 
     def calcSimGauss(self):
         data = numpy.array(self.dataList)        

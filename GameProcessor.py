@@ -1,6 +1,7 @@
 import os
 import sc2reader
 import Player
+import traceback
 
 class GameProcessor:
     CONST_FPS = 16.0
@@ -32,32 +33,68 @@ class GameProcessor:
                 if ext == GameProcessor.CONST_EXT:
                     self.files.append(os.path.join(dirpath,filename))
                     print(self.files[-1])
-
-    def processFiles(self):
+    
+    #Takes a possible queue for progress updates, this is useful if the code
+    #using this is running in a separate thread from the main stuff
+    def processFiles(self, progQueue=None):
         players = list()
+        fileCount = len(self.files)
         for filepath in self.files:
-                if filepath not in self.processed:
-                    self.processed[filepath] = 1
-                    curReplay = sc2reader.load_replay(filepath)
-                    total_time = curReplay.frames/GameProcessor.CONST_FPS
-                    freqDists = dict()
-                    print(curReplay.filename)
-                    for player in curReplay.players:
-                        freqDists[player.uid] = [0]*10
-                        print(player.uid)
-                    #This for loop takes on the order of 10^4 iterations per
-                    #replay, but it is not a performance bottleneck
-                    for event in curReplay.events:
-                        #Notice we check that the event was spawned by an actual
-                        #player
-                        if event.name == 'GetFromHotkeyEvent' and event.control_group < 10 and event.pid in freqDists.keys():
-                            (freqDists[event.pid])[event.control_group] = (freqDists[event.pid])[event.control_group]+1        
-                    for key in freqDists.keys():
-                        freqDists[key]  = [freq/total_time for freq in freqDists[key]]
-                        player = Player.Player(lookupName(key, curReplay), freqDists[key], lookupRace(key, curReplay), curReplay.map_name, curReplay.filename)
-                        players.append(player)
+            if filepath not in self.processed:
+                self.processed[filepath] = 1
+                total_time = curReplay.frames/GameProcessor.CONST_FPS
+                freqDists = dict()
+                print(curReplay.filename)
+                for player in curReplay.players:
+                    freqDists[player.uid] = [0]*10
+                    print(player.uid)
+                #This for loop takes on the order of 10^4 iterations per
+                #replay, but it is not a performance bottleneck
+                for event in curReplay.events:
+                    #Notice we check that the event was spawned by an actual
+                    #player
+                    if event.name == 'GetFromHotkeyEvent' and event.control_group < 10 and event.pid in freqDists.keys():
+                        (freqDists[event.pid])[event.control_group] = (freqDists[event.pid])[event.control_group]+1        
+                for key in freqDists.keys():
+                    freqDists[key]  = [freq/total_time for freq in freqDists[key]]
+                    player = Player.Player(lookupName(key, curReplay), freqDists[key], lookupRace(key, curReplay), curReplay.map_name, curReplay.filename)
+                    players.append(player)
         return players;
 
+    
+    def processFiles_mp(self, progQueue, errqueue):
+        players = list()
+        fileCount = len(self.files)
+        for filepath in self.files:
+            if filepath not in self.processed:
+                self.processed[filepath] = 1
+                try:
+                    curReplay = sc2reader.load_replay(filepath)
+                except:
+                    progQueue.put('FATAL') 
+                    errqueue.put(filepath + traceback.format_exc())
+                    #return players
+                    return None
+                total_time = curReplay.frames/GameProcessor.CONST_FPS
+                freqDists = dict()
+                print(curReplay.filename)
+                for player in curReplay.players:
+                    freqDists[player.uid] = [0]*10
+                    print(player.uid)
+                #This for loop takes on the order of 10^4 iterations per
+                #replay, but it is not a performance bottleneck
+                for event in curReplay.events:
+                    #Notice we check that the event was spawned by an actual
+                    #player
+                    if event.name == 'GetFromHotkeyEvent' and event.control_group < 10 and event.pid in freqDists.keys():
+                        (freqDists[event.pid])[event.control_group] = (freqDists[event.pid])[event.control_group]+1        
+                for key in freqDists.keys():
+                    freqDists[key]  = [freq/total_time for freq in freqDists[key]]
+                    player = Player.Player(lookupName(key, curReplay), freqDists[key], lookupRace(key, curReplay), curReplay.map_name, curReplay.filename)
+                    players.append(player)
+            if progQueue != None:
+                progQueue.put(str(100/fileCount))
+        return players               
 
 def processFile(singlefile):
     curReplay = sc2reader.load_replay(singlefile)
