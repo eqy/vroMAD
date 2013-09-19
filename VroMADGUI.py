@@ -1,10 +1,10 @@
 import traceback
 import multiprocessing as mp
 from multiprocessing import freeze_support
-import queue
-import tkinter as tk
-import tkinter.filedialog
-import tkinter.ttk
+import Queue
+import Tkinter as tk
+import tkFileDialog 
+import ttk
 import VroMAD
 
 
@@ -115,7 +115,7 @@ class VroMADGUI():
         self.popup = None 
 
         #Progressbar
-        self.progressBar = tk.ttk.Progressbar(self.frame,length=1000)
+        self.progressBar = ttk.Progressbar(self.frame,length=1000,mode="determinate")
         self.progressBar.grid(row=5,column=0,columnspan=10)
 
     def OnFrameConfigure(self, event):
@@ -125,13 +125,13 @@ class VroMADGUI():
         self.root.mainloop()
     
     def changePath(self):
-        self.referencePath = tk.filedialog.askdirectory()
+        self.referencePath = tkFileDialog.askdirectory()
         newPathContent = tk.StringVar()
         self.pathFrameLabel['textvariable']=newPathContent
         newPathContent.set(self.referencePath)
 
     def changeFile(self):
-        self.testPath = tk.filedialog.askopenfilename()
+        self.testPath = tkFileDialog.askopenfilename()
         newPathContent = tk.StringVar()
         self.idPathFrameLabel['textvariable']=newPathContent
         newPathContent.set(self.testPath)
@@ -203,16 +203,17 @@ class VroMADGUI():
         print("updateplz")
         try:
             queuestuff = queues[2].get_nowait()
-        except queue.Empty:
-            print("empty")
-            self.frame.after(10, self.checkStatus, queues)
+        except Queue.Empty:
+            self.frame.after(100, self.checkStatus, queues)
             return
         if queuestuff == "FATAL":
             self.exceptionPopUp(queues[3].get())
             return 
         elif queuestuff != "ALLDONEHERE":
+            print("hello") 
             self.progressBar.step(float(queuestuff))
-            self.frame.after(10, self.checkStatus, queues)
+            print(queuestuff)
+            self.frame.after(100, self.checkStatus, queues)
         else:
             #Handle done
             extractStatus = queues[0].get()

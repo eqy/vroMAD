@@ -93,7 +93,7 @@ class GameProcessor:
                     player = Player.Player(lookupName(key, curReplay), freqDists[key], lookupRace(key, curReplay), curReplay.map_name, curReplay.filename)
                     players.append(player)
             if progQueue != None:
-                progQueue.put(str(100/fileCount))
+                progQueue.put(str(100.0/fileCount))
         return players               
 
 def processFile(singlefile):
