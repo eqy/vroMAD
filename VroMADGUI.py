@@ -147,7 +147,7 @@ class VroMADGUI():
             objqueue = mp.Queue()
             progqueue = mp.Queue()
             errqueue = mp.Queue()
-            if __name__=='__main__':
+            if __name__=='VroMADGUI':
                 freeze_support()
                 process = mp.Process(target=self.vromad.extractPlayers_mp,args=[outqueue, objqueue, progqueue, errqueue])
                 process.daemon = True
