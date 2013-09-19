@@ -74,7 +74,7 @@ class VroMADGUI():
 
         #Still, I don't really know how this works
         #Canvas for table, we need 
-        self.tableCanvas = tk.Canvas(self.frame,width=1000,height=700,bg='white')
+        self.tableCanvas = tk.Canvas(self.frame,width=1000,height=400,bg='white')
 
         #Scrollbar for canvas
         self.scrollBar = tk.Scrollbar(self.frame,command=self.tableCanvas.yview)
