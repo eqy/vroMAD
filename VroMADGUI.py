@@ -147,7 +147,6 @@ class VroMADGUI():
             objqueue = mp.Queue()
             progqueue = mp.Queue()
             errqueue = mp.Queue()
-            freeze_support()
             
             #process = mp.Process(target=self.vromad.extractPlayers_mp,args=[outqueue, objqueue, progqueue, errqueue])
             process = mp.Process(target=wrapper, args=[self.vromad, outqueue, objqueue, progqueue, errqueue])

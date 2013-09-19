@@ -1,9 +1,12 @@
 import VroMADGUI
 import VroMAD
+from multiprocessing import freeze_support
 
-gui = VroMADGUI.VroMADGUI()
-#gui.populate()
-gui.paint()
+if __name__ == "__main__":
+    freeze_support() 
+    gui = VroMADGUI.VroMADGUI()
+    #gui.populate()
+    gui.paint()
 #vromad = VroMAD.VroMAD("../example", "../test/Dayshi vs Lucifron TvT Akilon Wastes Game 3.SC2Replay") 
 #vromad.extractPlayers()
 #vromad.calcSimGauss()
