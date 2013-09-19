@@ -32,7 +32,7 @@ class GameProcessor:
                 #We only care about files ending in .SC2Replay
                 if ext == GameProcessor.CONST_EXT:
                     self.files.append(os.path.join(dirpath,filename))
-                    print(self.files[-1])
+                    #print(self.files[-1])
     
     #Takes a possible queue for progress updates, this is useful if the code
     #using this is running in a separate thread from the main stuff
