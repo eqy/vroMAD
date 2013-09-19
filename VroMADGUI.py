@@ -200,14 +200,13 @@ class VroMADGUI():
             queuestuff = queues[2].get_nowait()
         except queue.Empty:
             print("empty")
-            self.root.update()
-            queuestuff = "WAIT"
+            self.frame.after(10, self.checkStatus, queues)
+            return
         if queuestuff == "FATAL":
             self.exceptionPopUp(queues[3].get())
             return 
         elif queuestuff != "ALLDONEHERE":
-            if queuestuff != "WAIT":
-                self.progressBar.step(float(queuestuff))
+            self.progressBar.step(float(queuestuff))
             self.frame.after(10, self.checkStatus, queues)
         else:
             #Handle done
