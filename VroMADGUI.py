@@ -28,7 +28,7 @@ class VroMADGUI():
         self.testPath      = ""  
  
         self.root = tk.Tk()
-        self.root.title("vroMAD")
+        self.root.title("vroMAD v0.1.0")
         self.frame = tk.Frame(self.root)
         self.frame.grid(row=0, column=0, padx=5, pady=5)
    
