@@ -1,5 +1,6 @@
 import traceback
 import multiprocessing as mp
+from multiprocessing import freeze_support
 import queue
 import tkinter as tk
 import tkinter.filedialog
@@ -146,6 +147,7 @@ class VroMADGUI():
             objqueue = mp.Queue()
             progqueue = mp.Queue()
             errqueue = mp.Queue()
+            freeze_support()
             process = mp.Process(target=self.vromad.extractPlayers_mp,args=[outqueue, objqueue, progqueue, errqueue])
             process.daemon = True
             process.start()
