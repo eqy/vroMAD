@@ -150,7 +150,7 @@ class VroMADGUI():
             freeze_support()
             
             #process = mp.Process(target=self.vromad.extractPlayers_mp,args=[outqueue, objqueue, progqueue, errqueue])
-            process = mp.Process(target=wrapper, args=[self, outqueue, objqueue, progqueue, errqueue])
+            process = mp.Process(target=wrapper, args=[self.vromad, outqueue, objqueue, progqueue, errqueue])
 
             process.daemon = True
             process.start()
@@ -225,8 +225,8 @@ class VroMADGUI():
                 self.radioButtonP1.configure(text="Player 0 (" + self.vromad.testPlayers[0].name + ")")
                 self.radioButtonP2.configure(text="Player 1 (" + self.vromad.testPlayers[1].name + ")")
     
-def wrapper(myself, outqueue, objqueue, progqueue, errqueue):
-     myself.vromad.extractPlayers_mp(outqueue, objqueue, progqueue, errqueue)
+def wrapper(vromad, outqueue, objqueue, progqueue, errqueue):
+     vromad.extractPlayers_mp(outqueue, objqueue, progqueue, errqueue)
 
 def wtf():
     print("WTF")
