@@ -147,14 +147,13 @@ class VroMADGUI():
             objqueue = mp.Queue()
             progqueue = mp.Queue()
             errqueue = mp.Queue()
-            if __name__=='VroMADGUI':
-                freeze_support()
-                process = mp.Process(target=self.vromad.extractPlayers_mp,args=[outqueue, objqueue, progqueue, errqueue])
-                process.daemon = True
-                process.start()
-                print("started process")
-                self.frame.after(10, self.checkStatus,[outqueue, objqueue, progqueue, errqueue])
-                print("bar should have started")
+            freeze_support()
+            process = mp.Process(target=self.vromad.extractPlayers_mp,args=[outqueue, objqueue, progqueue, errqueue])
+            process.daemon = True
+            process.start()
+            print("started process")
+            self.frame.after(10, self.checkStatus,[outqueue, objqueue, progqueue, errqueue])
+            print("bar should have started")
         else:
             self.startStatus.set("Please select valid paths.")
            
