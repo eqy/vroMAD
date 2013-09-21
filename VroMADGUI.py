@@ -22,13 +22,13 @@ class VroMADGUI():
     CONST_L  = '#CA2136'
 
     def __init__(self):
-        self.started = False
+        self.processed = False
         self.vromad = VroMAD.VroMAD()
         self.referencePath = ""
         self.testPath      = ""  
  
         self.root = tk.Tk()
-        self.root.title("vroMAD v0.1.1")
+        self.root.title("vroMAD v0.1.2")
         self.frame = tk.Frame(self.root)
         self.frame.grid(row=0, column=0, padx=5, pady=5)
    
@@ -160,7 +160,7 @@ class VroMADGUI():
             self.startStatus.set("Please select valid paths.")
            
     def drawTable(self):
-        if self.start:
+        if self.processed:
             results = self.vromad.calcSimGauss()
             self.resultLabels = list()
             i=1
@@ -196,7 +196,7 @@ class VroMADGUI():
         self.popup = tk.Toplevel()
         self.errMessage = tk.Message(self.popup, text=msg)
         self.errMessage.pack()
-        self.popup.title("EXCEPTION")
+        self.popup.title("Exception")
 
     def checkStatus(self,queues):
         print("updateplz")
@@ -207,8 +207,16 @@ class VroMADGUI():
             self.frame.after(10, self.checkStatus, queues)
             return
         if queuestuff == "FATAL":
-            self.exceptionPopUp(queues[3].get())
-            return 
+            filepath, e, formatted_str = queues[3].get()
+            if isinstance(e, AttributeError):
+                #Looks like we may know what we are dealing with here
+                self.exceptionPopUp("Oops, looks like one of the files had a " +
+                    "bad replay.tracker.events, but we can keep going\n" + 
+                    filepath + '\n' + formatted_str)
+                self.frame.after(10, self.checkStatus, queues)
+            else:
+                self.exceptionPopUp(filepath + formatted_str)
+                return 
         elif queuestuff != "ALLDONEHERE":
             self.progressBar.step(float(queuestuff))
             self.frame.after(10, self.checkStatus, queues)
@@ -220,6 +228,7 @@ class VroMADGUI():
                 self.startStatus.set("Please try a different path")
             else:
                 self.startStatus.set("Found " + str(extractStatus) + " players in reference folder.")   
+                self.processed = True
                 self.drawTable()
                 self.radioButtonP1.configure(text="Player 0 (" + self.vromad.testPlayers[0].name + ")")
                 self.radioButtonP2.configure(text="Player 1 (" + self.vromad.testPlayers[1].name + ")")

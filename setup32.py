@@ -15,6 +15,6 @@ for dirpath, dirnames, filenames in os.walk(CONST_SC2READER_PATH):
 
 setup(
      name = "vroMAD",
-     version = "0.1.1",
+     version = "0.1.2",
      options = {'build_exe': {'zip_includes':includefiles}},
      executables = [Executable("__main__.py", base = "WIN32GUI")])

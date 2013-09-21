@@ -70,11 +70,17 @@ class GameProcessor:
                 self.processed[filepath] = 1
                 try:
                     curReplay = sc2reader.load_replay(filepath)
-                except:
+                except Exception as e:
                     progQueue.put('FATAL') 
-                    errqueue.put(filepath + traceback.format_exc())
+                    errqueue.put([filepath,e,traceback.format_exc()])
+                    #This file was bad
+                    if isinstance(e, AttributeError):
+                        if progQueue != None:
+                            progQueue.put(str(100.0/fileCount))        
+                        continue    
+                    else:
+                        return None
                     #return players
-                    return None
                 total_time = curReplay.frames/GameProcessor.CONST_FPS
                 freqDists = dict()
                 print(curReplay.filename)
