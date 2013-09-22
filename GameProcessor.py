@@ -61,7 +61,7 @@ class GameProcessor:
                     players.append(player)
         return players;
 
-    
+    #Multiprocessing version of processFiles 
     def processFiles_mp(self, progQueue, errqueue):
         players = list()
         fileCount = len(self.files)
@@ -75,8 +75,7 @@ class GameProcessor:
                     errqueue.put([filepath,e,traceback.format_exc()])
                     #This file was bad
                     if isinstance(e, AttributeError):
-                        if progQueue != None:
-                            progQueue.put(str(100.0/fileCount))        
+                        progQueue.put(str(100.0/fileCount))        
                         continue    
                     else:
                         return None
@@ -98,8 +97,7 @@ class GameProcessor:
                     freqDists[key]  = [freq/total_time for freq in freqDists[key]]
                     player = Player.Player(lookupName(key, curReplay), freqDists[key], lookupRace(key, curReplay), curReplay.map_name, curReplay.filename)
                     players.append(player)
-            if progQueue != None:
-                progQueue.put(str(100.0/fileCount))
+            progQueue.put(str(100.0/fileCount))
         return players               
 
 def processFile(singlefile):
@@ -111,9 +109,7 @@ def processFile(singlefile):
         freqDists[player.uid] = [0]*10
     for event in curReplay.events:
         if event.name == 'GetFromHotkeyEvent' and event.control_group < 10 and event.pid in freqDists.keys():
-            #print(event.pid)
             (freqDists[event.pid])[event.control_group] = (freqDists[event.pid])[event.control_group]+1        
-            #print(  event._str_prefix() +  " selection event found " + str(event.control_group) + ' ' +  str(i))  
     for key in freqDists.keys():
         freqDists[key]  = [freq/total_time for freq in freqDists[key]]
         player = Player.Player(lookupName(key, curReplay), freqDists[key], lookupRace(key, curReplay), curReplay.map_name, curReplay.filename)
